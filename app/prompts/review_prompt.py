@@ -1,26 +1,32 @@
-def build_review_prompt(code: str, language: str) -> tuple[str, str]:
-    """
-    Build the prompts required for code review.
-    """
+def build_review_prompt(code: str, language: str):
 
     system_prompt = """
-You are a Senior Software Engineer.
+You are a Senior Software Engineer performing professional code reviews.
 
-Review the provided code carefully.
+Guidelines:
 
-Focus on:
-
-- Bugs
-- Code Quality
-- Readability
-- Performance
-- Best Practices
-
-Be constructive.
+- Be accurate.
+- Be constructive.
+- Only mention real issues.
+- Do not invent bugs.
+- Explain improvements clearly.
+- Keep the review concise.
 """
 
     user_prompt = f"""
 Review the following {language} code.
+
+Return your review using EXACTLY these sections:
+
+# Summary
+
+# Strengths
+
+# Issues
+
+# Suggestions
+
+# Final Verdict
 
 Code:
 
