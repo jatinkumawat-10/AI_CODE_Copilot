@@ -1,15 +1,15 @@
 from pathlib import Path
 from fastapi import UploadFile, HTTPException
 
-ALLOWED_EXTENSIONS = {
-    ".py",
-    ".js",
-    ".java",
-    ".ts",
-    ".cpp",
+from app.config import MAX_FILE_SIZE
+
+EXTENSION_LANGUAGE_MAP = {
+    ".py": "python",
+    ".js": "javascript",
+    ".ts": "typescript",
+    ".java": "java",
+    ".cpp": "cpp",
 }
-
-
 async def read_uploaded_code(file: UploadFile) -> str:
     """
     Validate and read uploaded source code.
@@ -23,13 +23,18 @@ async def read_uploaded_code(file: UploadFile) -> str:
 
     extension = Path(file.filename).suffix.lower()
 
-    if extension not in ALLOWED_EXTENSIONS:
+    if extension not in  EXTENSION_LANGUAGE_MAP:
         raise HTTPException(
             status_code=400,
             detail=f"Unsupported file type: {extension}"
         )
 
     contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+        status_code=400,
+        detail="Uploaded file exceeds the maximum size limit."
+    )
 
     if not contents:
         raise HTTPException(
@@ -47,3 +52,19 @@ async def read_uploaded_code(file: UploadFile) -> str:
         )
 
     return code
+
+def detect_language(filename: str) -> str:
+    """
+    Detect programming language from a file extension.
+    """
+
+    extension = Path(filename).suffix.lower()
+
+    try:
+        return EXTENSION_LANGUAGE_MAP[extension]
+
+    except KeyError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported programming language: {extension}"
+        )

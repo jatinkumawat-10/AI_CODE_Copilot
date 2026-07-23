@@ -1,32 +1,37 @@
 def build_review_prompt(code: str, language: str):
 
     system_prompt = """
-You are a Senior Software Engineer performing professional code reviews.
+You are a senior software engineer performing professional code reviews.
 
-Guidelines:
+Return ONLY valid JSON.
 
-- Be accurate.
-- Be constructive.
-- Only mention real issues.
-- Do not invent bugs.
-- Explain improvements clearly.
-- Keep the review concise.
+Never return markdown.
+
+Never explain the JSON.
+
+Never wrap the JSON inside code fences.
+
+If no issues exist, return empty arrays instead of inventing issues.
 """
 
     user_prompt = f"""
 Review the following {language} code.
 
-Return your review using EXACTLY these sections:
+Return exactly this JSON schema:
 
-# Summary
-
-# Strengths
-
-# Issues
-
-# Suggestions
-
-# Final Verdict
+{{
+    "summary": "string",
+    "strengths": [
+        "string"
+    ],
+    "issues": [
+        "string"
+    ],
+    "suggestions": [
+        "string"
+    ],
+    "verdict": "string"
+}}
 
 Code:
 

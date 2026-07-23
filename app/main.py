@@ -1,34 +1,36 @@
 from fastapi import FastAPI
-from app.routes.review import router as review_router
-from fastapi.responses import JSONResponse
+
 from app.exceptions import LLMServiceError
+from app.handlers.exception_handlers import llm_service_exception_handler
+from app.middleware.request_id import request_id_middleware
+from app.routes import health
+from app.routes.review import router as review_router
+
 app = FastAPI()
 
-@app.exception_handler(LLMServiceError)
-async def llm_exception_handler(request, exc):
+app.middleware("http")(request_id_middleware)
 
-    return JSONResponse(
-        status_code=503,
-        content={
-            "detail": str(exc)
-        },
-    )
+app.add_exception_handler(
+    LLMServiceError,
+    llm_service_exception_handler,
+)
+
 
 @app.get("/")
 def home():
     return {
-        "message":"Welcome to Code Review Copilot"
-        }
-@app.get("/health")
-def health():
-    return{
-        "status":"ok"
+        "message": "Welcome to Code Review Copilot"
     }
-# path parameters -> variables passed in the URL path
-# @app.get("/review")
-# def review(language: str = "python"):
-#     return {
-#         "language": language
-#     }
 
-app.include_router(review_router)
+
+app.include_router(
+    review_router,
+    prefix="/api/v1",
+    tags=["Review"],
+)
+
+app.include_router(
+    health.router,
+    prefix="/api/v1",
+    tags=["Health"],
+)
