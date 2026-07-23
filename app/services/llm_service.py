@@ -3,7 +3,7 @@ import time
 
 from app.config import MODEL_NAME
 from app.exceptions import LLMServiceError
-from app.llm.openrouter import client
+from app.llm.openrouter import get_client
 from app.schemas.llm import LLMResponse
 from app.schemas.review import ReviewResult
 from app.utils.logger import logger
@@ -14,6 +14,7 @@ def generate(system_prompt: str, user_prompt: str) -> LLMResponse:
     Generate a structured response from the configured LLM.
     """
     start = time.perf_counter()
+    client = get_client()
 
     try:
         response = client.chat.completions.create(
