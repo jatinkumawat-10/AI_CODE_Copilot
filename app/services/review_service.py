@@ -23,8 +23,7 @@ def review_code(code: str, language: str) -> ReviewResult:
         user_prompt=user_prompt,
     )
 
-    logger.info(
-        f"""
+    logger.info(f"""
 Review generated successfully.
 
 Model: {llm_response.model}
@@ -32,7 +31,6 @@ Latency: {llm_response.latency:.2f}s
 Prompt Tokens: {llm_response.prompt_tokens}
 Completion Tokens: {llm_response.completion_tokens}
 Total Tokens: {llm_response.total_tokens}
-"""
-    )
+""")
 
     return llm_response.content

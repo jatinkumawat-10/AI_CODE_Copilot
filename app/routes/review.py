@@ -1,11 +1,11 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile
 
-from app.schemas.review import ReviewResult
 from app.schemas.request import ReviewRequest
+from app.schemas.review import ReviewResult
 from app.services.review_service import review_code
 from app.utils.file_handler import (
-    read_uploaded_code,
     detect_language,
+    read_uploaded_code,
 )
 
 router = APIRouter()

@@ -1,4 +1,3 @@
-import pytest
 
 from app.schemas.llm import LLMResponse
 from app.schemas.review import ReviewResult
@@ -25,6 +24,7 @@ def fake_generate(system_prompt: str, user_prompt: str):
         total_tokens=30,
         latency=0.01,
     )
+
 
 def test_review_code_returns_review(monkeypatch):
     """

@@ -18,9 +18,7 @@ app.add_exception_handler(
 
 @app.get("/")
 def home():
-    return {
-        "message": "Welcome to Code Review Copilot"
-    }
+    return {"message": "Welcome to Code Review Copilot"}
 
 
 app.include_router(

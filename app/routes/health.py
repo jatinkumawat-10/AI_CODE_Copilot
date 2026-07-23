@@ -8,6 +8,4 @@ def health():
     """
     Health check endpoint.
     """
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}

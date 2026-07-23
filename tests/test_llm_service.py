@@ -1,6 +1,11 @@
 import json
 
+import pytest
+
+from app.exceptions import LLMServiceError
 from app.services.llm_service import generate
+
+
 class FakeResponse:
 
     model = "test-model"
@@ -19,13 +24,14 @@ class FakeResponse:
                     "strengths": ["Readable"],
                     "issues": [],
                     "suggestions": [],
-                    "verdict": "Looks good"
+                    "verdict": "Looks good",
                 }
             )
 
         message = Message()
 
     choices = [Choice()]
+
 
 class FakeClient:
 
@@ -40,12 +46,14 @@ class FakeClient:
         completions = Completions()
 
     chat = Chat()
+
+
 def test_generate(monkeypatch):
 
     monkeypatch.setattr(
-    "app.services.llm_service.get_client",
-    lambda: FakeClient(),
-)
+        "app.services.llm_service.get_client",
+        lambda: FakeClient(),
+    )
 
     response = generate(
         system_prompt="system",
@@ -62,9 +70,8 @@ def test_generate(monkeypatch):
 
     assert response.total_tokens == 30
 
-import pytest
 
-from app.exceptions import LLMServiceError
+
 
 
 class FailingClient:
@@ -85,9 +92,9 @@ class FailingClient:
 def test_generate_raises_llm_service_error(monkeypatch):
 
     monkeypatch.setattr(
-    "app.services.llm_service.get_client",
-    lambda: FailingClient(),
-)
+        "app.services.llm_service.get_client",
+        lambda: FailingClient(),
+    )
 
     with pytest.raises(LLMServiceError):
 

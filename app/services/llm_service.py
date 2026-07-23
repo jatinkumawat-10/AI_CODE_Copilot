@@ -42,8 +42,7 @@ def generate(system_prompt: str, user_prompt: str) -> LLMResponse:
         # Validate against Pydantic schema
         review = ReviewResult.model_validate(review_data)
 
-        logger.info(
-            f"""
+        logger.info(f"""
 Review generated successfully.
 
 Model: {response.model}
@@ -51,8 +50,7 @@ Latency: {latency:.2f}s
 Prompt Tokens: {response.usage.prompt_tokens}
 Completion Tokens: {response.usage.completion_tokens}
 Total Tokens: {response.usage.total_tokens}
-"""
-        )
+""")
 
         return LLMResponse(
             content=review,
@@ -66,6 +64,4 @@ Total Tokens: {response.usage.total_tokens}
     except Exception as e:
         logger.exception("Failed to generate response from LLM.")
 
-        raise LLMServiceError(
-            "Failed to generate AI review."
-        ) from e
+        raise LLMServiceError("Failed to generate AI review.") from e
