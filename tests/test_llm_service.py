@@ -43,9 +43,9 @@ class FakeClient:
 def test_generate(monkeypatch):
 
     monkeypatch.setattr(
-        "app.services.llm_service.client",
-        FakeClient(),
-    )
+    "app.services.llm_service.get_client",
+    lambda: FakeClient(),
+)
 
     response = generate(
         system_prompt="system",
@@ -85,9 +85,9 @@ class FailingClient:
 def test_generate_raises_llm_service_error(monkeypatch):
 
     monkeypatch.setattr(
-        "app.services.llm_service.client",
-        FailingClient(),
-    )
+    "app.services.llm_service.get_client",
+    lambda: FailingClient(),
+)
 
     with pytest.raises(LLMServiceError):
 
