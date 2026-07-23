@@ -71,9 +71,6 @@ def test_generate(monkeypatch):
     assert response.total_tokens == 30
 
 
-
-
-
 class FailingClient:
 
     class Chat:
