@@ -15,6 +15,7 @@ class ReviewRun(Base):
     that llm_service.py was already computing but only logging, not
     persisting.
     """
+
     __tablename__ = "review_runs"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -50,6 +51,7 @@ class ReviewItem(Base):
     kind='issue', and adding a column later (severity, approval_status)
     only touches one table, not three.
     """
+
     __tablename__ = "review_items"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -58,7 +60,9 @@ class ReviewItem(Base):
     review_run_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("review_runs.id"), nullable=False
     )
-    kind: Mapped[str] = mapped_column(String, nullable=False)  # strength|issue|suggestion
+    kind: Mapped[str] = mapped_column(
+        String, nullable=False
+    )  # strength|issue|suggestion
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     review_run: Mapped["ReviewRun"] = relationship(back_populates="items")

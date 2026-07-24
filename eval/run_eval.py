@@ -88,7 +88,12 @@ def run_single_trial(case: dict) -> dict:
         flagged = llm_judge(result.issues, bug["description"])
         method = "llm_judge"
 
-    return {"flagged": flagged, "method": method, "raw_issues": result.issues, "error": None}
+    return {
+        "flagged": flagged,
+        "method": method,
+        "raw_issues": result.issues,
+        "error": None,
+    }
 
 
 def score_case(case: dict, n_trials: int = N_TRIALS) -> dict:
@@ -137,10 +142,16 @@ if __name__ == "__main__":
     for r in results:
         methods = [t["method"] for t in r["trials"] if t["error"] is None]
         method_summary = f"keyword={methods.count('keyword')}, llm_judge={methods.count('llm_judge')}"
-        hit_rate_str = f"{r['hits']}/{r['n_valid_trials']}" if r["n_valid_trials"] else "no valid trials"
+        hit_rate_str = (
+            f"{r['hits']}/{r['n_valid_trials']}"
+            if r["n_valid_trials"]
+            else "no valid trials"
+        )
         error_note = f", {r['n_errors']} errored" if r["n_errors"] else ""
         print(f"{r['case_id']}: {hit_rate_str} hit rate ({method_summary}){error_note}")
 
-    print(f"\nOverall recall across {len(true_positive_cases)} cases: "
-          f"{recall:.1%} ({total_hits}/{total_valid} valid trials, "
-          f"{total_errors} errored and excluded)")
+    print(
+        f"\nOverall recall across {len(true_positive_cases)} cases: "
+        f"{recall:.1%} ({total_hits}/{total_valid} valid trials, "
+        f"{total_errors} errored and excluded)"
+    )

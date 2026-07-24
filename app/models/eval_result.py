@@ -17,6 +17,7 @@ class EvalResult(Base):
     results from the same execution of run_eval.py can be grouped and
     compared against earlier runs over time.
     """
+
     __tablename__ = "eval_results"
 
     id: Mapped[uuid.UUID] = mapped_column(
