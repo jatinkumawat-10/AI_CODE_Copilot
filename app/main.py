@@ -6,6 +6,7 @@ from app.handlers.exception_handlers import llm_service_exception_handler
 from app.middleware.request_id import request_id_middleware
 from app.routes import health
 from app.routes.review import router as review_router
+from app.routes.webhook import router as webhook_router
 
 app = FastAPI()
 
@@ -39,4 +40,10 @@ app.include_router(
     health.router,
     prefix="/api/v1",
     tags=["Health"],
+)
+
+app.include_router(
+    webhook_router,
+    prefix="/api/v1",
+    tags=["Webhook"],
 )
