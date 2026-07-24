@@ -20,6 +20,7 @@ class ProcessedWebhookEvent(Base):
     tradeoff: it protects against wasted LLM calls on true duplicates,
     at the cost of not auto-retrying failed attempts.
     """
+
     __tablename__ = "processed_webhook_events"
     __table_args__ = (
         UniqueConstraint(

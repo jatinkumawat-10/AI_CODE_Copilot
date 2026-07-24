@@ -18,9 +18,7 @@ GITHUB_PAT = os.getenv("GITHUB_PAT")
 # would fail loudly if anything actually tried to connect with it -- real
 # local/production runs always set a real DATABASE_URL via .env or Render's
 # environment variables, which takes priority over this fallback.
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://user:pass@localhost/placeholder"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/placeholder")
 
 BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "poolside/laguna-xs-2.1:free"

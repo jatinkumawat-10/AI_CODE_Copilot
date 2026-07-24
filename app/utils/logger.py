@@ -1,4 +1,5 @@
 import logging
+
 # idempotency test commit
 # Logs to both console (as before) and app.log -- the file handler exists
 # specifically so logs can be inspected directly (`tail -f app.log`)

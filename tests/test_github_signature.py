@@ -6,11 +6,14 @@ from app.utils.github_signature import verify_github_signature
 
 def _sign(payload_body: bytes, secret: str) -> str:
     """Helper: compute a valid signature the same way GitHub would."""
-    return "sha256=" + hmac.new(
-        key=secret.encode("utf-8"),
-        msg=payload_body,
-        digestmod=hashlib.sha256,
-    ).hexdigest()
+    return (
+        "sha256="
+        + hmac.new(
+            key=secret.encode("utf-8"),
+            msg=payload_body,
+            digestmod=hashlib.sha256,
+        ).hexdigest()
+    )
 
 
 def test_verify_github_signature_valid(monkeypatch):
