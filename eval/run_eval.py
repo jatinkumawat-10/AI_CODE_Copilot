@@ -141,7 +141,10 @@ if __name__ == "__main__":
 
     for r in results:
         methods = [t["method"] for t in r["trials"] if t["error"] is None]
-        method_summary = f"keyword={methods.count('keyword')}, llm_judge={methods.count('llm_judge')}"
+        method_summary = (
+            f"keyword={methods.count('keyword')}, "
+            f"llm_judge={methods.count('llm_judge')}"
+        )
         hit_rate_str = (
             f"{r['hits']}/{r['n_valid_trials']}"
             if r["n_valid_trials"]

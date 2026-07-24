@@ -1,6 +1,7 @@
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock
 
 from app.db import get_db
 from app.main import app

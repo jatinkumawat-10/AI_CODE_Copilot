@@ -1,9 +1,7 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -12,8 +10,9 @@ config = context.config
 # Override the placeholder in alembic.ini with our real DATABASE_URL from
 # app/config.py (which loads it from .env). This keeps the actual
 # connection string, including the password, out of alembic.ini — a file
-# that's normally committed to version control.
-from app.config import DATABASE_URL
+# that's normally committed to version control. Import must come after
+# config = context.config above, hence the noqa for import-order rules.
+from app.config import DATABASE_URL  # noqa: E402,I001
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
@@ -24,8 +23,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.db import Base
-import app.models  # noqa: F401 -- import triggers model registration on Base.metadata
+from app.db import Base  # noqa: E402,I001
+import app.models  # noqa: F401,E402 -- import triggers model registration on Base.metadata
 
 target_metadata = Base.metadata
 
