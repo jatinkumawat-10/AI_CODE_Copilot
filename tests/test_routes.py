@@ -1,20 +1,28 @@
+from app.schemas.llm import LLMResponse
 from app.schemas.review import ReviewResult
 
 
-def fake_review_code(code: str, language: str):
-    return ReviewResult(
-        summary="Good code",
-        strengths=["Readable"],
-        issues=[],
-        suggestions=[],
-        verdict="Looks good",
+def fake_generate_review(code: str, language: str):
+    return LLMResponse(
+        content=ReviewResult(
+            summary="Good code",
+            strengths=["Readable"],
+            issues=[],
+            suggestions=[],
+            verdict="Looks good",
+        ),
+        model="test-model",
+        prompt_tokens=10,
+        completion_tokens=20,
+        total_tokens=30,
+        latency=0.01,
     )
 
 
 def test_review_route_success(client, monkeypatch):
     monkeypatch.setattr(
-        "app.routes.review.review_code",
-        fake_review_code,
+        "app.routes.review.generate_review",
+        fake_generate_review,
     )
 
     response = client.post(

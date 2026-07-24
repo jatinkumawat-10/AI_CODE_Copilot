@@ -10,7 +10,7 @@ async def llm_service_exception_handler(
     exc: LLMServiceError,
 ):
     return JSONResponse(
-        status_code=500,
+        status_code=exc.status_code,
         content=ErrorResponse(
             code="LLM_ERROR",
             message=str(exc),

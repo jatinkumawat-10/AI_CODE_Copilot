@@ -1,6 +1,8 @@
 import json
 import time
 
+from openai import RateLimitError
+
 from app.config import MODEL_NAME
 from app.exceptions import LLMServiceError
 from app.llm.openrouter import get_client
@@ -60,6 +62,14 @@ Total Tokens: {response.usage.total_tokens}
             total_tokens=response.usage.total_tokens,
             latency=latency,
         )
+
+    except RateLimitError as e:
+        logger.exception("LLM provider rate limit exceeded.")
+
+        raise LLMServiceError(
+            "The AI review service is rate-limited. Please try again later.",
+            status_code=429,
+        ) from e
 
     except Exception as e:
         logger.exception("Failed to generate response from LLM.")

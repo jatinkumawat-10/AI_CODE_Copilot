@@ -1,0 +1,12 @@
+{
+  "case_id": "002_missing_null_check",
+  "language": "python",
+  "filename": "user_profile.py",
+  "code": "def get_user_email(user):\n    return user.profile.email\n\ndef notify_user(user):\n    email = get_user_email(user)\n    send_email(email, \"Welcome!\")\n",
+  "planted_bug": {
+    "category": "correctness",
+    "description": "Missing null check before accessing user.profile, causing AttributeError if user or user.profile is None",
+    "key_concepts": ["null check", "None check", "AttributeError", "NoneType", "missing validation"]
+  },
+  "expected_to_flag": true
+}

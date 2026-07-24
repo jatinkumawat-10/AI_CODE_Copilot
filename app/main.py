@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.exceptions import LLMServiceError
 from app.handlers.exception_handlers import llm_service_exception_handler
@@ -7,6 +8,13 @@ from app.routes import health
 from app.routes.review import router as review_router
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.middleware("http")(request_id_middleware)
 

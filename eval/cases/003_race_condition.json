@@ -1,0 +1,12 @@
+{
+  "case_id": "003_race_condition",
+  "language": "python",
+  "filename": "bank_account.py",
+  "code": "import time\n\nclass BankAccount:\n    def __init__(self, balance):\n        self.balance = balance\n\n    def withdraw(self, amount):\n        if self.balance >= amount:\n            time.sleep(0.01)\n            self.balance -= amount\n            return True\n        return False\n",
+  "planted_bug": {
+    "category": "correctness",
+    "description": "Race condition: check-then-act pattern (check balance, then deduct) with no lock, allowing concurrent withdraw calls to overdraw the account",
+    "key_concepts": ["race condition", "thread safety", "concurrent", "lock", "check-then-act", "TOCTOU"]
+  },
+  "expected_to_flag": true
+}
