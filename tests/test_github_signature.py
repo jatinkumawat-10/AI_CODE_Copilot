@@ -1,6 +1,8 @@
 import hashlib
 import hmac
 
+import pytest
+
 from app.utils.github_signature import verify_github_signature
 
 
@@ -51,3 +53,16 @@ def test_verify_github_signature_tampered_payload(monkeypatch):
     tampered_payload = b'{"action": "closed"}'
 
     assert verify_github_signature(tampered_payload, signature) is False
+
+
+def test_verify_github_signature_raises_if_secret_not_configured(monkeypatch):
+    """
+    A missing/empty GITHUB_WEBHOOK_SECRET must fail loudly, not silently
+    verify against an empty string (which would make verification
+    meaningless -- any signature computed with an empty key would be
+    trivially reproducible).
+    """
+    monkeypatch.setattr("app.config.GITHUB_WEBHOOK_SECRET", None)
+
+    with pytest.raises(RuntimeError):
+        verify_github_signature(b'{"action": "opened"}', "sha256=anything")

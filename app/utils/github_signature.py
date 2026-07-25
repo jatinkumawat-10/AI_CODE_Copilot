@@ -1,6 +1,8 @@
 import hashlib
 import hmac
 
+from app import config
+
 
 def verify_github_signature(payload_body: bytes, signature_header: str | None) -> bool:
     """
@@ -10,8 +12,22 @@ def verify_github_signature(payload_body: bytes, signature_header: str | None) -
 
     Without this check, anyone who discovers the webhook URL could send
     fake payloads pretending to be GitHub.
+
+    Note: imports the config *module* at module level (not the specific
+    GITHUB_WEBHOOK_SECRET name), then reads config.GITHUB_WEBHOOK_SECRET
+    inside the function. This avoids a fresh import statement on every
+    call, while still reading the attribute live off the module each time
+    -- which is what keeps tests.monkeypatch.setattr("app.config.GITHUB_WEBHOOK_SECRET", ...)
+    working correctly (a `from app.config import GITHUB_WEBHOOK_SECRET` at
+    module level would bind the value once at import time, silently
+    ignoring anything patched onto app.config afterward).
     """
-    from app.config import GITHUB_WEBHOOK_SECRET
+    if not config.GITHUB_WEBHOOK_SECRET:
+        raise RuntimeError(
+            "GITHUB_WEBHOOK_SECRET is not configured -- refusing to verify "
+            "webhook signatures against an empty secret, which would make "
+            "verification meaningless."
+        )
 
     if signature_header is None:
         return False
@@ -19,7 +35,7 @@ def verify_github_signature(payload_body: bytes, signature_header: str | None) -
     expected_signature = (
         "sha256="
         + hmac.new(
-            key=GITHUB_WEBHOOK_SECRET.encode("utf-8"),
+            key=config.GITHUB_WEBHOOK_SECRET.encode("utf-8"),
             msg=payload_body,
             digestmod=hashlib.sha256,
         ).hexdigest()
