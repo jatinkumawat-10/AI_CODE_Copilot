@@ -1,7 +1,15 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -53,6 +61,12 @@ class ReviewItem(Base):
     """
 
     __tablename__ = "review_items"
+    __table_args__ = (
+        CheckConstraint(
+            "approval_status IN ('proposed', 'approved', 'rejected', 'applied')",
+            name="ck_review_item_approval_status",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -64,5 +78,12 @@ class ReviewItem(Base):
         String, nullable=False
     )  # strength|issue|suggestion
     content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Only meaningful for kind='issue' -- strengths/suggestions don't go
+    # through triage, but living in the same table avoids a fourth model
+    # just for one extra column on a subset of rows.
+    approval_status: Mapped[str] = mapped_column(
+        String, nullable=False, default="proposed"
+    )
 
     review_run: Mapped["ReviewRun"] = relationship(back_populates="items")
