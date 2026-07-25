@@ -1,6 +1,8 @@
 from pathlib import Path
 
+from app.db import SessionLocal
 from app.services.github_service import get_pr_files, post_pr_comment
+from app.services.persistence_service import save_review_run
 from app.services.review_service import generate_review
 from app.utils.file_handler import EXTENSION_LANGUAGE_MAP
 from app.utils.logger import logger
@@ -76,6 +78,25 @@ def _review_pull_request_impl(owner: str, repo: str, pr_number: int) -> None:
         except Exception:
             logger.exception(f"Review failed for {filename} in PR #{pr_number}")
             continue
+
+        db = SessionLocal()
+        try:
+            save_review_run(
+                db=db,
+                code=patch,
+                language=language,
+                llm_response=llm_response,
+                filename=filename,
+                pr_owner=owner,
+                pr_repo=repo,
+                pr_number=pr_number,
+            )
+        except Exception:
+            logger.exception(
+                f"Failed to persist review for {filename} in PR #{pr_number}"
+            )
+        finally:
+            db.close()
 
         review = llm_response.content
         review_sections.append(

@@ -17,7 +17,8 @@ def verify_github_signature(payload_body: bytes, signature_header: str | None) -
     GITHUB_WEBHOOK_SECRET name), then reads config.GITHUB_WEBHOOK_SECRET
     inside the function. This avoids a fresh import statement on every
     call, while still reading the attribute live off the module each time
-    -- which is what keeps tests.monkeypatch.setattr("app.config.GITHUB_WEBHOOK_SECRET", ...)
+    -- which is what keeps
+    monkeypatch.setattr("app.config.GITHUB_WEBHOOK_SECRET", ...)
     working correctly (a `from app.config import GITHUB_WEBHOOK_SECRET` at
     module level would bind the value once at import time, silently
     ignoring anything patched onto app.config afterward).

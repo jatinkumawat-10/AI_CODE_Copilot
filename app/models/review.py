@@ -33,6 +33,13 @@ class ReviewRun(Base):
     language: Mapped[str] = mapped_column(String, nullable=False)
     code: Mapped[str] = mapped_column(Text, nullable=False)
 
+    # Nullable: only populated for webhook-triggered PR reviews, not
+    # manual /review calls. This is what lets the merge->auto-approve
+    # heuristic later find "all review_items belonging to this PR".
+    pr_owner: Mapped[str] = mapped_column(String, nullable=True)
+    pr_repo: Mapped[str] = mapped_column(String, nullable=True)
+    pr_number: Mapped[int] = mapped_column(Integer, nullable=True)
+
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     verdict: Mapped[str] = mapped_column(Text, nullable=False)
 
