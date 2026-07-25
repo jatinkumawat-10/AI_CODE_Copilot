@@ -30,3 +30,45 @@ def validate_transition(current_status: str, new_status: str) -> None:
             f"Valid transitions from '{current_status}': "
             f"{sorted(allowed) or 'none (terminal state)'}"
         )
+
+
+def approve_merged_pr_items(db, owner: str, repo: str, pr_number: int) -> int:
+    """
+    Bulk-transitions all still-'proposed' issue items belonging to a
+    merged PR to 'approved'.
+
+    This is a heuristic, not a guarantee: a merged PR means the team
+    accepted the code as mergeable, which implicitly accepts whatever
+    issues remained flagged -- it does NOT mean each individual issue was
+    reviewed or confirmed fixed. A PR can merge with some flagged issues
+    fixed, others dismissed, others never looked at at all. Callers
+    (and anyone reading approval_status='approved' later) should treat
+    this as "the team shipped it anyway," not "this specific issue was
+    verified resolved."
+
+    Returns the number of items transitioned, for logging.
+    """
+    from app.models.review import ReviewItem, ReviewRun
+
+    review_run_ids = (
+        db.query(ReviewRun.id)
+        .filter_by(pr_owner=owner, pr_repo=repo, pr_number=pr_number)
+        .subquery()
+    )
+
+    proposed_items = (
+        db.query(ReviewItem)
+        .filter(
+            ReviewItem.review_run_id.in_(review_run_ids),
+            ReviewItem.kind == "issue",
+            ReviewItem.approval_status == "proposed",
+        )
+        .all()
+    )
+
+    for item in proposed_items:
+        item.approval_status = "approved"
+
+    db.commit()
+
+    return len(proposed_items)

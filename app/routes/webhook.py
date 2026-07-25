@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.webhook_event import ProcessedWebhookEvent
+from app.services.approval_service import approve_merged_pr_items
 from app.services.pr_review_service import review_pull_request
 from app.utils.github_signature import verify_github_signature
 from app.utils.logger import logger
@@ -20,11 +21,17 @@ async def github_webhook(
 ):
     """
     Receives GitHub webhook events. Verifies the payload signature before
-    trusting anything in it, then filters to only the pull_request events
-    we actually care about (opened/synchronize). Acknowledges quickly,
-    then runs the actual review as a background task -- GitHub expects a
-    response within ~10s and our reviews have measured up to 79s, so the
-    review must not block this response.
+    trusting anything in it, then handles two kinds of pull_request
+    events:
+
+    - closed+merged=true: bulk-approves all still-'proposed' issue items
+      belonging to that PR (see approve_merged_pr_items's docstring for
+      why this is a heuristic, not a guarantee, of individual review).
+    - opened/synchronize: triggers a review as a background task --
+      GitHub expects a response within ~10s and our reviews have
+      measured up to 79s, so the review must not block this response.
+
+    Any other pull_request action is acknowledged and ignored.
     """
     raw_body = await request.body()
 
@@ -39,13 +46,26 @@ async def github_webhook(
     payload = await request.json()
     action = payload.get("action")
 
+    pr_number = payload["number"]
+    repo_full_name = payload["repository"]["full_name"]
+    owner, repo = repo_full_name.split("/")
+
+    if action == "closed" and payload["pull_request"].get("merged") is True:
+        approved_count = approve_merged_pr_items(
+            db=db, owner=owner, repo=repo, pr_number=pr_number
+        )
+        logger.info(
+            f"PR merged: {repo_full_name} PR #{pr_number} -- "
+            f"auto-approved {approved_count} previously-proposed issue(s). "
+            f"Note: this reflects the team accepting the code as mergeable, "
+            f"not individual verification of each issue."
+        )
+        return {"status": "merged", "auto_approved_count": approved_count}
+
     if action not in ("opened", "synchronize"):
         logger.info(f"Ignoring pull_request action: {action}")
         return {"status": "ignored", "reason": f"action '{action}' not handled"}
 
-    pr_number = payload["number"]
-    repo_full_name = payload["repository"]["full_name"]
-    owner, repo = repo_full_name.split("/")
     head_sha = payload["pull_request"]["head"]["sha"]
 
     already_processed = (
