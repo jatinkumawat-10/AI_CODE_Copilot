@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.request import ReviewRequest
-from app.schemas.review import ReviewResult
+from app.schemas.review import ReviewResultResponse
 from app.services.persistence_service import save_review_run
 from app.services.review_service import generate_review
 from app.utils.file_handler import (
@@ -14,7 +14,7 @@ from app.utils.file_handler import (
 router = APIRouter()
 
 
-@router.post("/review", response_model=ReviewResult)
+@router.post("/review", response_model=ReviewResultResponse)
 def review(request: ReviewRequest, db: Session = Depends(get_db)):
     """
     Review source code submitted as JSON, persisting the run to the database.
@@ -24,17 +24,20 @@ def review(request: ReviewRequest, db: Session = Depends(get_db)):
         language=request.language,
     )
 
-    save_review_run(
+    review_run = save_review_run(
         db=db,
         code=request.code,
         language=request.language,
         llm_response=llm_response,
     )
 
-    return llm_response.content
+    return ReviewResultResponse(
+        **llm_response.content.model_dump(),
+        review_run_id=str(review_run.id),
+    )
 
 
-@router.post("/review/file", response_model=ReviewResult)
+@router.post("/review/file", response_model=ReviewResultResponse)
 async def review_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -51,7 +54,7 @@ async def review_file(
         language=language,
     )
 
-    save_review_run(
+    review_run = save_review_run(
         db=db,
         code=code,
         language=language,
@@ -59,4 +62,7 @@ async def review_file(
         filename=file.filename,
     )
 
-    return llm_response.content
+    return ReviewResultResponse(
+        **llm_response.content.model_dump(),
+        review_run_id=str(review_run.id),
+    )

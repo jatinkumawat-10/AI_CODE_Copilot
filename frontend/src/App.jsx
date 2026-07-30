@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const API_BASE = "http://localhost:8000/api/v1";
 
@@ -11,7 +11,28 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [items, setItems] = useState([]);
+  const [itemsError, setItemsError] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!result?.review_run_id) return;
+
+    async function fetchItems() {
+      try {
+        const response = await fetch(
+          `${API_BASE}/review-runs/${result.review_run_id}/items`
+        );
+        if (!response.ok) throw new Error(`Failed to load items (${response.status})`);
+        const data = await response.json();
+        setItems(data);
+      } catch (err) {
+        setItemsError(err.message);
+      }
+    }
+
+    fetchItems();
+  }, [result]);
 
   function handleDragOver(e) {
     e.preventDefault(); // required, or the browser's default (open file in tab) takes over
@@ -29,11 +50,38 @@ function App() {
     if (droppedFile) setFile(droppedFile);
   }
 
+  async function handleStatusChange(itemId, newStatus) {
+    try {
+      const response = await fetch(`${API_BASE}/review-items/${itemId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.detail || `Request failed (${response.status})`);
+      }
+
+      const updated = await response.json();
+
+      // Update just this one item in place, rather than refetching the
+      // whole list -- cheaper, and avoids a visible flicker.
+      setItems((prev) =>
+        prev.map((item) => (item.id === itemId ? updated : item))
+      );
+    } catch (err) {
+      alert(`Could not update status: ${err.message}`);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
+    setItems([]);
+    setItemsError(null);
 
     try {
       let response;
@@ -180,11 +228,50 @@ function App() {
           </ul>
 
           <h2>Issues</h2>
-          <ul>
-            {result.issues.length === 0 ? (
+          {itemsError && (
+            <p style={{ color: "red" }}>Could not load items: {itemsError}</p>
+          )}
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {items.filter((item) => item.kind === "issue").length === 0 ? (
               <li>None found</li>
             ) : (
-              result.issues.map((issue, i) => <li key={i}>{issue}</li>)
+              items
+                .filter((item) => item.kind === "issue")
+                .map((item) => (
+                  <li
+                    key={item.id}
+                    style={{
+                      marginBottom: "0.75rem",
+                      padding: "0.5rem",
+                      border: "1px solid #444",
+                      borderRadius: 6,
+                    }}
+                  >
+                    <div>{item.content}</div>
+                    <div style={{ marginTop: "0.4rem", fontSize: "0.85rem" }}>
+                      Status: <strong>{item.approval_status}</strong>
+                      {item.approval_status === "proposed" && (
+                        <>
+                          {" "}
+                          <button onClick={() => handleStatusChange(item.id, "approved")}>
+                            Approve
+                          </button>{" "}
+                          <button onClick={() => handleStatusChange(item.id, "rejected")}>
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {item.approval_status === "approved" && (
+                        <>
+                          {" "}
+                          <button onClick={() => handleStatusChange(item.id, "applied")}>
+                            Mark Applied
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                ))
             )}
           </ul>
 

@@ -12,6 +12,32 @@ from app.utils.logger import logger
 router = APIRouter()
 
 
+@router.get("/review-runs/{review_run_id}/items")
+def list_review_run_items(review_run_id: uuid.UUID, db: Session = Depends(get_db)):
+    """
+    Lists all items (strengths/issues/suggestions) for one specific
+    review run, identified by its ID.
+
+    Deliberately scoped to a single review_run_id, not a global listing
+    across all reviews -- this app has no auth/login, so a broad
+    "list everything" endpoint would expose every review (including any
+    PR-linked ones) to anyone who found the URL. Scoping to an ID the
+    caller already has (because they just created that review themselves)
+    avoids that entirely.
+    """
+    items = db.query(ReviewItem).filter_by(review_run_id=review_run_id).all()
+
+    return [
+        {
+            "id": str(item.id),
+            "kind": item.kind,
+            "content": item.content,
+            "approval_status": item.approval_status,
+        }
+        for item in items
+    ]
+
+
 @router.patch("/review-items/{item_id}/status")
 def update_approval_status(
     item_id: uuid.UUID,
