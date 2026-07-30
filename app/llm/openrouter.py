@@ -19,3 +19,4 @@ def get_client() -> OpenAI:
         api_key=OPENAI_API_KEY,
         base_url=BASE_URL,
     )
+#test
