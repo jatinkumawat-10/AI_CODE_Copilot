@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const API_BASE = "http://localhost:8000/api/v1";
+const API_BASE = "https://ai-code-copilot-o12g.onrender.com/api/v1";
 
 function App() {
   const [mode, setMode] = useState("paste"); // "paste" | "upload"
@@ -122,6 +122,62 @@ function App() {
   return (
     <div style={{ maxWidth: 700, margin: "2rem auto", fontFamily: "sans-serif" }}>
       <h1>AI Code Review</h1>
+
+      <details style={{ marginBottom: "1.5rem", fontSize: "0.9rem" }}>
+        <summary style={{ cursor: "pointer", fontWeight: "bold" }}>
+          GitHub Integration Setup & API Reference
+        </summary>
+
+        <div style={{ marginTop: "1rem", lineHeight: 1.6 }}>
+          <h3>Set up automatic PR reviews</h3>
+          <p>
+            In your repo: <strong>Settings → Webhooks → Add webhook</strong>
+          </p>
+          <ul>
+            <li>
+              <strong>Payload URL:</strong>{" "}
+              <code>{API_BASE}/webhooks/github</code>
+            </li>
+            <li>
+              <strong>Content type:</strong> <code>application/json</code>
+            </li>
+            <li>
+              <strong>Secret:</strong> must match the{" "}
+              <code>GITHUB_WEBHOOK_SECRET</code> configured on this backend
+            </li>
+            <li>
+              <strong>Events:</strong> select "Let me select individual
+              events" → check only <strong>Pull requests</strong>
+            </li>
+          </ul>
+          <p>
+            Once configured, opening or updating a PR triggers an automatic
+            AI review posted as a PR comment. Merging a PR auto-approves any
+            issues still marked "proposed" from that PR's reviews.
+          </p>
+
+          <h3>API Endpoints</h3>
+          <ul>
+            <li>
+              <code>POST /review</code> — review pasted code (JSON:{" "}
+              <code>{"{code, language}"}</code>)
+            </li>
+            <li>
+              <code>POST /review/file</code> — review an uploaded file
+              (multipart form, field name <code>file</code>)
+            </li>
+            <li>
+              <code>GET /review-runs/{"{id}"}/items</code> — list a
+              specific review's strengths/issues/suggestions with their IDs
+            </li>
+            <li>
+              <code>PATCH /review-items/{"{id}"}/status</code> — transition
+              an issue's status (<code>proposed → approved/rejected</code>,{" "}
+              <code>approved → applied</code>)
+            </li>
+          </ul>
+        </div>
+      </details>
 
       <form onSubmit={handleSubmit}>
         <label>
