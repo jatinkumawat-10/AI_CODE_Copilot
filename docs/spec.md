@@ -150,3 +150,35 @@ persist results, post summary as a PR comment.
 4. React demo UI (upload form + results table)
 5. GitHub webhook + PR-diff review
 6. Approval state machine (`proposed → approved → applied`)
+
+
+
+## Documented limitation: merge-approve race condition (found 2026-07-30)
+
+Confirmed via real production data: when a PR is merged shortly after its
+last `synchronize` event, the merge-triggered bulk-approve
+(`approve_merged_pr_items`) can run *before* the background review task
+has finished persisting all files' review_items. 
+
+**Evidence:** PR #1's synchronize event triggered review of 15 changed
+files as a background task. The merge event fired ~83 seconds later,
+while only 7 of 15 file reviews had been persisted. Result: 25 items
+correctly bulk-approved; 18 items (from files not yet reviewed at that
+moment) remained 'proposed' indefinitely, since the merge event only
+fires once.
+
+**Root cause:** two independent async processes (file-by-file review
+generation, and the merge webhook's approval query) with no coordination
+between them -- the merge handler queries "what review_items exist right
+now," not "what will eventually exist for this commit."
+
+**Impact:** low for demo/portfolio purposes, real for production use --
+some issues from a merged PR would never get their approval_status
+updated from 'proposed', silently understating the merge-approve
+heuristic's actual coverage.
+
+**Not fixed today; documented as a known, deliberate scope boundary.**
+Future fix options: (a) have the merge handler wait/retry for any
+in-flight review tasks on that PR before running its approval query, or
+(b) track "reviews still pending" explicitly and re-run the bulk-approve
+once they complete.
