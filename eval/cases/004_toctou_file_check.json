@@ -1,0 +1,12 @@
+{
+  "case_id": "004_toctou_file_check",
+  "language": "python",
+  "filename": "config_writer.py",
+  "code": "import os\n\ndef save_config(path, data):\n    if not os.path.exists(path):\n        with open(path, \"w\") as f:\n            f.write(data)\n        return True\n    return False\n",
+  "planted_bug": {
+    "category": "correctness",
+    "description": "Time-of-check-to-time-of-use (TOCTOU) race condition: os.path.exists check and file creation are not atomic, so a concurrent process could create the file in between, causing data loss or unexpected overwrite",
+    "key_concepts": ["TOCTOU", "race condition", "atomic", "time-of-check", "concurrent", "file already exists"]
+  },
+  "expected_to_flag": true
+}

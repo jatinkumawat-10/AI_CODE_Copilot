@@ -14,3 +14,11 @@ select = [
 ]
 
 ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic's generated env.py inherently places imports after config setup
+# (e.g. `from app.config import DATABASE_URL` must come after
+# `config = context.config`). This is structural to how Alembic works,
+# not a real ordering mistake -- ignore import-order rules for this one
+# generated file rather than fight noqa placement against Black's wrapping.
+"alembic/env.py" = ["E402", "I001"]

@@ -1,0 +1,12 @@
+{
+  "case_id": "005_shared_counter_race",
+  "language": "python",
+  "filename": "counter.py",
+  "code": "import threading\n\ncounter = 0\n\ndef increment():\n    global counter\n    for _ in range(100000):\n        counter += 1\n\nthreads = [threading.Thread(target=increment) for _ in range(4)]\nfor t in threads:\n    t.start()\nfor t in threads:\n    t.join()\n\nprint(counter)\n",
+  "planted_bug": {
+    "category": "correctness",
+    "description": "Race condition: multiple threads increment a shared global counter without a lock, so counter += 1 is not atomic and increments can be lost, producing a final count less than 400000",
+    "key_concepts": ["race condition", "thread safety", "lock", "not atomic", "shared state", "GIL"]
+  },
+  "expected_to_flag": true
+}

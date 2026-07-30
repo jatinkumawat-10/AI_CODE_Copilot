@@ -1,0 +1,12 @@
+{
+  "case_id": "001_sql_injection",
+  "language": "python",
+  "filename": "vulnerable_query.py",
+  "code": "def get_user(username):\n    query = \"SELECT * FROM users WHERE username = '\" + username + \"'\"\n    cursor.execute(query)\n    return cursor.fetchone()\n",
+  "planted_bug": {
+    "category": "security",
+    "description": "SQL injection via unsanitized string concatenation into a query",
+    "key_concepts": ["SQL injection", "string concatenation", "unsanitized input", "parameterized query"]
+  },
+  "expected_to_flag": true
+}

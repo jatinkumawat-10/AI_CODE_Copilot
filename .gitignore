@@ -24,3 +24,7 @@ venv/
 
 # Docker
 *.pid
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
